@@ -66,9 +66,9 @@ results %<>% filter(simulation_run != 20)
 
 
 make_qq_plot_of_results <- function(results, ymax = 120, main = "", model_type_loc = "GALM"){
-
+  
   model_type_loc_name <- toupper(model_type_loc)
-
+  
   results_qq_plot <- results %>% 
     group_by(simulation_run) %>% 
     mutate(
@@ -419,7 +419,7 @@ yearly_max_by_site <- rbind(
       yearly_max_bamlss = max(simulation_values_bamlss),
       .groups = "drop"
     ) %>% mutate(site = "mean")
-  )
+)
 
 # Rescale as this might help with optimiyation (Belize et al. 2022)
 yearly_max_by_site %<>%
@@ -508,7 +508,6 @@ asymptotic_se <- tibble(do.call(data.frame, asymptotic_se))
 asymptotic_se %>% filter(site %in% c("S003", "S041", "S102", "S146", "S005", "pooled", "mean"))
 
 
-
 # GEV Analysis -- Seasonal maxima --------------------------------------------------------------
 
 
@@ -550,7 +549,7 @@ seasonal_max_by_site <- rbind(
       seasonal_max_bamlss = max(simulation_values_bamlss),
       .groups = "drop"
     ) %>% mutate(site = "mean")
-  )
+)
 
 seasonal_max_by_site %<>%
   group_by(
@@ -730,12 +729,12 @@ dir.create(paste0("plots/", effect_types, "/joint_latent_multivariate_gaussian/o
 
 
 sites_for_gev <- results %>% group_by(site) %>% summarise(n = n_distinct(year), .groups= "drop") %>% filter(n >= 30) %>% pull(site)
-  
+
 # 19 simulation runs
 results %<>% filter(simulation_run != 20, site %in% sites_for_gev)
 
 # Mean
-results %>% 
+p_mean_bamlss <- results %>% 
   mutate(month = month(date)) %>%
   group_by(month, simulation_run) %>%
   reframe(
@@ -763,9 +762,9 @@ results %>%
   scale_x_continuous(breaks = c(1:12)) + 
   theme_bw() + theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), legend.position = "bottom", legend.title=element_blank()) +
   ylim(1.2, 2.8)
-ggsave(paste0("plots/", effect_types, "/joint_latent_multivariate_gaussian/overview_plots/bamlss_mean.png"), width = 1800, height = 1400, units = "px")
+# ggsave(paste0("plots/", effect_types, "/joint_latent_multivariate_gaussian/overview_plots/bamlss_mean.png"), p_mean_bamlss, width = 1800, height = 1400, units = "px")
 
-results %>% 
+p_mean_galm <- results %>% 
   mutate(month = month(date)) %>%
   group_by(month, simulation_run) %>%
   reframe(
@@ -793,10 +792,10 @@ results %>%
   scale_x_continuous(breaks = c(1:12)) + 
   theme_bw() + theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), legend.position = "bottom", legend.title=element_blank()) +
   ylim(1.2, 2.8)
-ggsave(paste0("plots/", effect_types, "/joint_latent_multivariate_gaussian/overview_plots/galm_mean.png"), width = 1800, height = 1400, units = "px")
+# ggsave(paste0("plots/", effect_types, "/joint_latent_multivariate_gaussian/overview_plots/galm_mean.png"), p_mean_galm, width = 1800, height = 1400, units = "px")
 
 # Std
-results %>% 
+p_std_bamlss <- results %>% 
   group_by(simulation_run, date) %>%
   summarise(
     simulation_values_bamlss = mean(simulation_values_bamlss), 
@@ -829,9 +828,9 @@ results %>%
   scale_x_continuous(breaks = c(1:12)) + 
   theme_bw() + theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), legend.position = "bottom", legend.title=element_blank()) +
   ylim(2.9, 6.3)
-ggsave(paste0("plots/", effect_types, "/joint_latent_multivariate_gaussian/overview_plots/bamlss_std.png"), width = 1800, height = 1400, units = "px")
+# ggsave(paste0("plots/", effect_types, "/joint_latent_multivariate_gaussian/overview_plots/bamlss_std.png"), p_std_bamlss, width = 1800, height = 1400, units = "px")
 
-results %>% 
+p_std_galm <- results %>% 
   group_by(simulation_run, date) %>%
   summarise(
     simulation_values_galm = mean(simulation_values_galm), 
@@ -864,11 +863,11 @@ results %>%
   scale_x_continuous(breaks = c(1:12)) + 
   theme_bw() + theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), legend.position = "bottom", legend.title=element_blank()) +
   ylim(2.9, 6.3)
-ggsave(paste0("plots/", effect_types, "/joint_latent_multivariate_gaussian/overview_plots/galm_std.png"), width = 1800, height = 1400, units = "px")
+# ggsave(paste0("plots/", effect_types, "/joint_latent_multivariate_gaussian/overview_plots/galm_std.png"), p_std_galm, width = 1800, height = 1400, units = "px")
 
 
 # Proportion wet
-results %>% 
+p_prop_bamlss <- results %>% 
   group_by(simulation_run, date) %>%
   summarise(
     simulation_values_bamlss = mean(simulation_values_bamlss), 
@@ -901,9 +900,9 @@ results %>%
   scale_x_continuous(breaks = c(1:12)) + 
   theme_bw() + theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), legend.position = "bottom", legend.title=element_blank()) +
   ylim(0.37, 0.65)
-ggsave(paste0("plots/", effect_types, "/joint_latent_multivariate_gaussian/overview_plots/bamlss_proportion_wet.png"), width = 1800, height = 1400, units = "px")
+# ggsave(paste0("plots/", effect_types, "/joint_latent_multivariate_gaussian/overview_plots/bamlss_proportion_wet.png"), p_prop_bamlss, width = 1800, height = 1400, units = "px")
 
-results %>% 
+p_prop_galm <- results %>% 
   group_by(simulation_run, date) %>%
   summarise(
     simulation_values_galm = mean(simulation_values_galm), 
@@ -942,11 +941,11 @@ results %>%
   scale_x_continuous(breaks = c(1:12)) + 
   theme_bw() + theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), legend.position = "bottom", legend.title=element_blank()) +
   ylim(0.37, 0.65)
-ggsave(paste0("plots/", effect_types, "/joint_latent_multivariate_gaussian/overview_plots/galm_proportion_wet.png"), width = 1800, height = 1400, units = "px")
+# ggsave(paste0("plots/", effect_types, "/joint_latent_multivariate_gaussian/overview_plots/galm_proportion_wet.png"), p_prop_galm, width = 1800, height = 1400, units = "px")
 
 
 # Conditional mean
-results %>% 
+p_cmean_bamlss <- results %>% 
   group_by(simulation_run, date) %>%
   summarise(
     simulation_values_bamlss = mean(simulation_values_bamlss), 
@@ -979,9 +978,9 @@ results %>%
   scale_x_continuous(breaks = c(1:12)) + 
   theme_bw() + theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), legend.position = "bottom", legend.title=element_blank()) +
   ylim(2.7, 5.2)
-ggsave(paste0("plots/", effect_types, "/joint_latent_multivariate_gaussian/overview_plots/bamlss_cond_mean.png"), width = 1800, height = 1400, units = "px")
+# ggsave(paste0("plots/", effect_types, "/joint_latent_multivariate_gaussian/overview_plots/bamlss_cond_mean.png"), p_cmean_bamlss, width = 1800, height = 1400, units = "px")
 
-results %>% 
+p_cmean_galm <- results %>% 
   group_by(simulation_run, date) %>%
   summarise(
     simulation_values_galm = mean(simulation_values_galm), 
@@ -1013,10 +1012,10 @@ results %>%
   scale_x_continuous(breaks = c(1:12)) + 
   theme_bw() + theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), legend.position = "bottom", legend.title=element_blank()) +
   ylim(2.7, 5.2)
-ggsave(paste0("plots/", effect_types, "/joint_latent_multivariate_gaussian/overview_plots/galm_cond_mean.png"), width = 1800, height = 1400, units = "px")
+# ggsave(paste0("plots/", effect_types, "/joint_latent_multivariate_gaussian/overview_plots/galm_cond_mean.png"), p_cmean_galm, width = 1800, height = 1400, units = "px")
 
 # Conditional std
-results %>% 
+p_cstd_bamlss <- results %>% 
   group_by(simulation_run, date) %>%
   summarise(
     simulation_values_bamlss = mean(simulation_values_bamlss), 
@@ -1050,9 +1049,9 @@ results %>%
   scale_x_continuous(breaks = c(1:12)) + 
   theme_bw() + theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), legend.position = "bottom", legend.title=element_blank()) +
   ylim(3.5, 8)
-ggsave(paste0("plots/", effect_types, "/joint_latent_multivariate_gaussian/overview_plots/bamlss_cond_std.png"), width = 1800, height = 1400, units = "px")
+# ggsave(paste0("plots/", effect_types, "/joint_latent_multivariate_gaussian/overview_plots/bamlss_cond_std.png"), p_cstd_bamlss, width = 1800, height = 1400, units = "px")
 
-results %>% 
+p_cstd_galm <- results %>% 
   group_by(simulation_run, date) %>%
   summarise(
     simulation_values_galm = mean(simulation_values_galm), 
@@ -1086,11 +1085,11 @@ results %>%
   scale_x_continuous(breaks = c(1:12)) + 
   theme_bw() + theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), legend.position = "bottom", legend.title=element_blank()) +
   ylim(3.5, 8)
-ggsave(paste0("plots/", effect_types, "/joint_latent_multivariate_gaussian/overview_plots/galm_cond_std.png"), width = 1800, height = 1400, units = "px")
+# ggsave(paste0("plots/", effect_types, "/joint_latent_multivariate_gaussian/overview_plots/galm_cond_std.png"), p_cstd_galm, width = 1800, height = 1400, units = "px")
 
 
 # Max
-results %>% 
+p_max_bamlss <- results %>% 
   group_by(simulation_run, date) %>%
   summarise(
     simulation_values_bamlss = mean(simulation_values_bamlss), 
@@ -1124,9 +1123,9 @@ results %>%
   scale_x_continuous(breaks = c(1:12)) + 
   theme_bw() + theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), legend.position = "bottom", legend.title=element_blank()) +
   ylim(20, 140)
-ggsave(paste0("plots/", effect_types, "/joint_latent_multivariate_gaussian/overview_plots/bamlss_max.png"), width = 1800, height = 1400, units = "px")
+# ggsave(paste0("plots/", effect_types, "/joint_latent_multivariate_gaussian/overview_plots/bamlss_max.png"), p_max_bamlss, width = 1800, height = 1400, units = "px")
 
-results %>% 
+p_max_galm <- results %>% 
   group_by(simulation_run, date) %>%
   summarise(
     simulation_values_galm = mean(simulation_values_galm), 
@@ -1160,9 +1159,218 @@ results %>%
   scale_x_continuous(breaks = c(1:12)) + 
   theme_bw() + theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), legend.position = "bottom", legend.title=element_blank()) +
   ylim(20, 140)
-ggsave(paste0("plots/", effect_types, "/joint_latent_multivariate_gaussian/overview_plots/galm_max.png"), width = 1800, height = 1400, units = "px")
+# ggsave(paste0("plots/", effect_types, "/joint_latent_multivariate_gaussian/overview_plots/galm_max.png"), p_max_galm, width = 1800, height = 1400, units = "px")
 
-  
+
+# Lag 1
+# Create lagged dataset (shift date forward by 1 day)
+lagged <- results %>%
+  mutate(date = date + 1) %>%
+  select(
+    site,
+    simulation_run,
+    date,
+    lag1_simulation_values_galm  = simulation_values_galm,
+    lag1_simulation_values_bamlss = simulation_values_bamlss,
+    lag1_real_precip             = real_precip
+  )
+
+# Join back to original data
+results <- results %>%
+  left_join(lagged, by = c("site", "date", 'simulation_run'))
+
+
+p_lag1_bamlss <- results %>% 
+  mutate(month = month(date)) %>%
+  group_by(month, simulation_run, site) %>%
+  summarise(
+    cor = cor(simulation_values_bamlss, lag1_simulation_values_bamlss, use = "complete.obs"), 
+    real_precip = cor(real_precip, lag1_real_precip, use = "complete.obs"), 
+    .groups = "drop") %>%
+  group_by(month, simulation_run) %>%
+  summarise(
+    cor = mean(cor),
+    real_precip = mean(real_precip),
+    .groups = 'drop'
+  ) %>%
+  group_by(month) %>%
+  # 90% is full 19, 80% is inner 9, 75% is inner 7, 50% is inner 3
+  reframe(
+    q_90_l = nth(cor, 1, order_by = cor), 
+    q_90_u = nth(cor, 19, order_by = cor), 
+    q_70_l = nth(cor, 3, order_by = cor), 
+    q_70_u = nth(cor, 17, order_by = cor), 
+    q_50_l = nth(cor, 5, order_by = cor), 
+    q_50_u = nth(cor, 15, order_by = cor),
+    q_30_l = nth(cor, 7, order_by = cor), 
+    q_30_u = nth(cor, 13, order_by = cor),
+    real_precip = mean(real_precip)
+  ) %>%
+  ggplot(aes(x = month)) +
+  geom_ribbon(aes(ymin = q_30_l, ymax = q_30_u), alpha = 0.17, fill = "darkblue") +
+  geom_ribbon(aes(ymin = q_50_l, ymax = q_50_u), alpha = 0.17, fill = "darkblue") +
+  geom_ribbon(aes(ymin = q_70_l, ymax = q_70_u), alpha = 0.17, fill = "darkblue") +
+  geom_ribbon(aes(ymin = q_90_l, ymax = q_90_u), alpha = 0.17, fill = "darkblue") +
+  geom_line(aes(y = real_precip), linewidth = 1.1) +
+  xlab("Month") + ylab("mm") + 
+  scale_x_continuous(breaks = c(1:12)) + 
+  theme_bw() + theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), legend.position = "bottom", legend.title=element_blank())
+# ggsave(paste0("plots/", effect_types, "/joint_latent_multivariate_gaussian/overview_plots/bamlss_acf1.png"), p_lag1_bamlss, width = 1800, height = 1400, units = "px")
+
+p_lag1_galm <- results %>% 
+  mutate(month = month(date)) %>%
+  group_by(month, simulation_run, site) %>%
+  summarise(
+    cor = cor(simulation_values_galm, lag1_simulation_values_galm, use = "complete.obs"), 
+    real_precip = cor(real_precip, lag1_real_precip, use = "complete.obs"), 
+    .groups = "drop") %>%
+  group_by(month, simulation_run) %>%
+  summarise(
+    cor = mean(cor),
+    real_precip = mean(real_precip),
+    .groups = 'drop'
+  ) %>%
+  group_by(month) %>%
+  # 90% is full 19, 80% is inner 9, 75% is inner 7, 50% is inner 3
+  reframe(
+    q_90_l = nth(cor, 1, order_by = cor), 
+    q_90_u = nth(cor, 19, order_by = cor), 
+    q_70_l = nth(cor, 3, order_by = cor), 
+    q_70_u = nth(cor, 17, order_by = cor), 
+    q_50_l = nth(cor, 5, order_by = cor), 
+    q_50_u = nth(cor, 15, order_by = cor),
+    q_30_l = nth(cor, 7, order_by = cor), 
+    q_30_u = nth(cor, 13, order_by = cor),
+    real_precip = mean(real_precip)
+  ) %>%
+  ggplot(aes(x = month)) +
+  geom_ribbon(aes(ymin = q_30_l, ymax = q_30_u), alpha = 0.17, fill = "darkblue") +
+  geom_ribbon(aes(ymin = q_50_l, ymax = q_50_u), alpha = 0.17, fill = "darkblue") +
+  geom_ribbon(aes(ymin = q_70_l, ymax = q_70_u), alpha = 0.17, fill = "darkblue") +
+  geom_ribbon(aes(ymin = q_90_l, ymax = q_90_u), alpha = 0.17, fill = "darkblue") +
+  geom_line(aes(y = real_precip), linewidth = 1.1) +
+  xlab("Month") + ylab("mm") + 
+  scale_x_continuous(breaks = c(1:12)) + 
+  theme_bw() + theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), legend.position = "bottom", legend.title=element_blank())
+# ggsave(paste0("plots/", effect_types, "/joint_latent_multivariate_gaussian/overview_plots/galm_acf1.png"), p_lag1_galm, width = 1800, height = 1400, units = "px")
+
+
+# Lag 2 
+# Create lagged dataset (shift date forward by 1 day)
+lagged <- results %>%
+  mutate(date = date + 2) %>%
+  select(
+    site,
+    simulation_run,
+    date,
+    lag2_simulation_values_galm  = simulation_values_galm,
+    lag2_simulation_values_bamlss = simulation_values_bamlss,
+    lag2_real_precip             = real_precip
+  )
+
+# Join back to original data
+results <- results %>%
+  left_join(lagged, by = c("site", "date", 'simulation_run'))
+
+
+p_lag2_bamlss <- results %>% 
+  mutate(month = month(date)) %>%
+  group_by(month, simulation_run, site) %>%
+  summarise(
+    cor = cor(simulation_values_bamlss, lag2_simulation_values_bamlss, use = "complete.obs"), 
+    real_precip = cor(real_precip, lag2_real_precip, use = "complete.obs"), 
+    .groups = "drop") %>%
+  group_by(month, simulation_run) %>%
+  summarise(
+    cor = mean(cor),
+    real_precip = mean(real_precip),
+    .groups = 'drop'
+  ) %>%
+  group_by(month) %>%
+  # 90% is full 19, 80% is inner 9, 75% is inner 7, 50% is inner 3
+  reframe(
+    q_90_l = nth(cor, 1, order_by = cor), 
+    q_90_u = nth(cor, 19, order_by = cor), 
+    q_70_l = nth(cor, 3, order_by = cor), 
+    q_70_u = nth(cor, 17, order_by = cor), 
+    q_50_l = nth(cor, 5, order_by = cor), 
+    q_50_u = nth(cor, 15, order_by = cor),
+    q_30_l = nth(cor, 7, order_by = cor), 
+    q_30_u = nth(cor, 13, order_by = cor),
+    real_precip = mean(real_precip)
+  ) %>%
+  ggplot(aes(x = month)) +
+  geom_ribbon(aes(ymin = q_30_l, ymax = q_30_u), alpha = 0.17, fill = "darkblue") +
+  geom_ribbon(aes(ymin = q_50_l, ymax = q_50_u), alpha = 0.17, fill = "darkblue") +
+  geom_ribbon(aes(ymin = q_70_l, ymax = q_70_u), alpha = 0.17, fill = "darkblue") +
+  geom_ribbon(aes(ymin = q_90_l, ymax = q_90_u), alpha = 0.17, fill = "darkblue") +
+  geom_line(aes(y = real_precip), linewidth = 1.1) +
+  xlab("Month") + ylab("mm") + 
+  scale_x_continuous(breaks = c(1:12)) + 
+  theme_bw() + theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), legend.position = "bottom", legend.title=element_blank())
+# ggsave(paste0("plots/", effect_types, "/joint_latent_multivariate_gaussian/overview_plots/bamlss_acf2.png"), p_lag2_bamlss, width = 1800, height = 1400, units = "px")
+
+p_lag2_galm <- results %>% 
+  mutate(month = month(date)) %>%
+  group_by(month, simulation_run, site) %>%
+  summarise(
+    cor = cor(simulation_values_galm, lag2_simulation_values_galm, use = "complete.obs"), 
+    real_precip = cor(real_precip, lag2_real_precip, use = "complete.obs"), 
+    .groups = "drop") %>%
+  group_by(month, simulation_run) %>%
+  summarise(
+    cor = mean(cor),
+    real_precip = mean(real_precip),
+    .groups = 'drop'
+  ) %>%
+  group_by(month) %>%
+  # 90% is full 19, 80% is inner 9, 75% is inner 7, 50% is inner 3
+  reframe(
+    q_90_l = nth(cor, 1, order_by = cor), 
+    q_90_u = nth(cor, 19, order_by = cor), 
+    q_70_l = nth(cor, 3, order_by = cor), 
+    q_70_u = nth(cor, 17, order_by = cor), 
+    q_50_l = nth(cor, 5, order_by = cor), 
+    q_50_u = nth(cor, 15, order_by = cor),
+    q_30_l = nth(cor, 7, order_by = cor), 
+    q_30_u = nth(cor, 13, order_by = cor),
+    real_precip = mean(real_precip)
+  ) %>%
+  ggplot(aes(x = month)) +
+  geom_ribbon(aes(ymin = q_30_l, ymax = q_30_u), alpha = 0.17, fill = "darkblue") +
+  geom_ribbon(aes(ymin = q_50_l, ymax = q_50_u), alpha = 0.17, fill = "darkblue") +
+  geom_ribbon(aes(ymin = q_70_l, ymax = q_70_u), alpha = 0.17, fill = "darkblue") +
+  geom_ribbon(aes(ymin = q_90_l, ymax = q_90_u), alpha = 0.17, fill = "darkblue") +
+  geom_line(aes(y = real_precip), linewidth = 1.1) +
+  xlab("Month") + ylab("mm") + 
+  scale_x_continuous(breaks = c(1:12)) + 
+  theme_bw() + theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), legend.position = "bottom", legend.title=element_blank())
+# ggsave(paste0("plots/", effect_types, "/joint_latent_multivariate_gaussian/overview_plots/galm_acf2.png"), p_lag2_galm, width = 1800, height = 1400, units = "px")
+
+
+plot_bamlss <- (p_mean_bamlss + ggtitle("Mean") | p_std_bamlss + ggtitle("Standard deviation") | p_prop_bamlss + ggtitle("Proportion wet") | p_cmean_bamlss + ggtitle("Conditional mean")) /
+  (p_cstd_bamlss + ggtitle("Conditional standard deviation") | p_max_bamlss + ggtitle("Maximum") | p_lag1_bamlss + ggtitle("ACF1") | p_lag2_bamlss + ggtitle("ACF2"))
+
+plot_bamlss <- plot_bamlss & theme(
+  plot.title = element_text(size = 14, face = "bold"),
+  axis.title = element_text(size = 10),
+  axis.text  = element_text(size = 8)
+) 
+ggsave(paste0("plots/", effect_types, "/joint_latent_multivariate_gaussian/overview_plots/combined_bamlss.png"), plot_bamlss, width = 4000, height = 2000, dpi = 300, units = "px")
+
+
+
+plot_galm <- (p_mean_galm + ggtitle("Mean") | p_std_galm + ggtitle("Standard deviation") | p_prop_galm + ggtitle("Proportion wet") | p_cmean_galm + ggtitle("Conditional mean")) /
+  (p_cstd_galm + ggtitle("Conditional standard deviation") | p_max_galm + ggtitle("Maximum") | p_lag1_galm + ggtitle("ACF1") | p_lag2_galm + ggtitle("ACF2"))
+
+plot_galm <- plot_galm & theme(
+  plot.title = element_text(size = 14, face = "bold"),
+  axis.title = element_text(size = 10),
+  axis.text  = element_text(size = 8)
+) 
+ggsave(paste0("plots/", effect_types, "/joint_latent_multivariate_gaussian/overview_plots/combined_galm.png"), plot_galm, width = 4000, height = 2000, dpi = 300, units = "px")
+
+
 # Overview plots -- Merged timeseries----------------------------------------------------------
 
 # Monthly
@@ -1579,7 +1787,7 @@ ggsave(paste0("plots/", effect_types, "/joint_latent_multivariate_gaussian/overv
 dir.create(paste0("plots/", effect_types, "/joint_latent_multivariate_gaussian/overview_plots/prop_wet_days_station/"))
 
 for(chosen_site in unique(results$site)){
-
+  
   results %>% 
     filter(site == chosen_site) %>%
     group_by(month, simulation_run) %>%
@@ -1608,7 +1816,7 @@ for(chosen_site in unique(results$site)){
     scale_x_continuous(breaks = c(1:12)) + 
     theme_bw() + theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), legend.position = "bottom", legend.title=element_blank())
   ggsave(paste0("plots/", effect_types, "/joint_latent_multivariate_gaussian/overview_plots/prop_wet_days_station/", chosen_site, "_bamlss_proportion_wet.png"), width = 1800, height = 1400, units = "px")
-
+  
   results %>% 
     filter(site == chosen_site) %>%
     group_by(month, simulation_run) %>%
@@ -1661,3 +1869,323 @@ for(threshold in c(0.1, 0.25, 0.5, 1.0, 2.0)){
   }
   print(paste0("Conditional, sim:", round(100*mean(vals), digits = 2), " ", round(sd(100*vals), digits = 3)))
 }
+
+
+
+# Persistence of areal average -----------------------------------------------------------
+library(dplyr)
+library(ggplot2)
+library(tidyr)
+library(purrr)
+
+# 1. Areal average per day
+df_areal <- results %>%
+  group_by(date, simulation_run) %>%
+  summarise(
+    real_precip   = mean(real_precip, na.rm = TRUE),
+    galm_precip   = mean(simulation_values_galm, na.rm = TRUE),
+    bamlss_precip = mean(simulation_values_bamlss, na.rm = TRUE),
+    .groups = "drop"
+  )
+
+# 2. Compute run lengths using rle()
+get_rle_lengths <- function(x) {
+  r <- rle(x)
+  list(
+    wet = r$lengths[r$values == TRUE],
+    dry = r$lengths[r$values == FALSE]
+  )
+}
+
+# Observed (use simulation_run == 1 as proxy)
+rle_obs <- df_areal %>%
+  filter(simulation_run == 1) %>%
+  mutate(is_wet = real_precip > 0) %>%
+  pull(is_wet) %>%
+  get_rle_lengths()
+
+# Simulation runs
+sim_runs <- unique(df_areal$simulation_run)
+
+# Function to compute run lengths per simulation and source
+compute_rle_sim <- function(df, run, col_name) {
+  r <- df %>%
+    filter(simulation_run == run) %>%
+    mutate(is_wet = !!sym(col_name) > 0) %>%
+    pull(is_wet) %>%
+    get_rle_lengths()
+  r
+}
+
+# Initialize lists
+rle_galm <- map(sim_runs, ~ compute_rle_sim(df_areal, .x, "galm_precip"))
+rle_bamlss <- map(sim_runs, ~ compute_rle_sim(df_areal, .x, "bamlss_precip"))
+
+
+# 3. Prepare data for plotting
+# Observed
+df_plot <- tibble(
+  run_length = c(rle_obs$dry, rle_obs$wet),
+  type       = c(rep("Dry", length(rle_obs$dry)), rep("Wet", length(rle_obs$wet))),
+  source     = "Observed",
+  run        = NA
+)
+
+# Add GALM
+for(i in seq_along(sim_runs)) {
+  df_plot <- df_plot %>%
+    bind_rows(
+      tibble(
+        run_length = rle_galm[[i]]$dry,
+        type       = "Dry",
+        source     = model_name_loc,
+        run        = sim_runs[i]
+      ),
+      tibble(
+        run_length = rle_galm[[i]]$wet,
+        type       = "Wet",
+        source     = model_name_loc,
+        run        = sim_runs[i]
+      )
+    )
+}
+
+# Add BAMLSS
+for(i in seq_along(sim_runs)) {
+  df_plot <- df_plot %>%
+    bind_rows(
+      tibble(
+        run_length = rle_bamlss[[i]]$dry,
+        type       = "Dry",
+        source     = "GAMLSS",
+        run        = sim_runs[i]
+      ),
+      tibble(
+        run_length = rle_bamlss[[i]]$wet,
+        type       = "Wet",
+        source     = "GAMLSS",
+        run        = sim_runs[i]
+      )
+    )
+}
+
+
+# 4. Tail probability plot
+tail_df <- df_plot %>%
+  group_by(source, run, type) %>%
+  count(run_length) %>%
+  group_by(source, type) %>%
+  arrange(run_length) %>%
+  mutate(
+    prob = n / sum(n),
+    tail_prob = rev(cumsum(rev(prob)))
+  )
+
+ggplot(tail_df, aes(x = run_length, y = tail_prob, color = source)) +
+  # simulation runs faint
+  geom_line(data = tail_df %>% filter(!is.na(run)), aes(group = interaction(source, run)), alpha = 0.5) +
+  # observed thick
+  geom_line(data = tail_df %>% filter(is.na(run)), size = 1.05, color = 'black') +
+  facet_wrap(~ type) +
+  scale_y_log10() +
+  scale_color_manual(
+    values = setNames(
+      c("indianred1", "lightblue", "black"),   # colors
+      c(model_name_loc, "GAMLSS", "Observed") # names must match source levels
+    ),
+    breaks = c(model_name_loc, "GAMLSS", "Observed"),
+    name = "Model"
+  ) +
+  labs(
+    x = "Run length ≥ k (days)",
+    y = "Tail probability (log scale)"
+  ) +
+  theme_minimal() +
+  theme(
+    plot.title       = element_text(size = 18),
+    axis.title       = element_text(size = 14),
+    axis.text        = element_text(size = 12),
+    legend.title     = element_text(size = 14),
+    legend.text      = element_text(size = 14),
+    strip.text       = element_text(size = 14)  # facet labels
+  )
+ggsave(paste0("plots/", effect_types, "/joint_latent_multivariate_gaussian/overview_plots/persistence.png"), width = 2500, height = 1250, units = "px")
+
+
+
+# Persistence of pooled stations ------------------------------------------
+
+get_rle_lengths_with_NA <- function(x) {
+  r <- rle(x)
+  list(
+    wet = r$lengths[r$values == TRUE & !is.na(r$values)],
+    dry = r$lengths[r$values == FALSE & !is.na(r$values)]
+  )
+}
+compute_rle_sim_with_NA <- function(df, run, col_name) {
+  r <- df %>%
+    filter(simulation_run == run) %>%
+    mutate(is_wet = !!sym(col_name) > 0) %>%
+    pull(is_wet) %>%
+    get_rle_lengths_with_NA()
+  r
+}
+
+dfs <- list()
+for(site_it in sites_for_gev){
+  sim_runs <- unique(results$simulation_run)
+  
+  rle_obs <- results %>%
+    filter(simulation_run == 1, site == site_it) %>%
+    complete(date = seq(min(date), max(date), by = "day")) %>%
+    mutate(is_wet = real_precip > 0) %>%
+    pull(is_wet) %>%
+    get_rle_lengths_with_NA()
+  
+  # Initialize lists
+  results_site <- results %>% 
+    filter(site == site_it) %>%
+    complete(date = seq(min(date), max(date), by = "day")) 
+  
+  rle_galm <- map(sim_runs, ~ compute_rle_sim_with_NA(results_site, .x, "simulation_values_galm"))
+  rle_bamlss <- map(sim_runs, ~ compute_rle_sim_with_NA(results_site, .x, "simulation_values_bamlss"))
+  
+  # 3. Prepare data for plotting
+  # Observed
+  df_plot <- tibble(
+    run_length = c(rle_obs$dry, rle_obs$wet),
+    type       = c(rep("Dry", length(rle_obs$dry)), rep("Wet", length(rle_obs$wet))),
+    source     = "Observed",
+    run        = NA,
+    site       = site_it
+  )
+  
+  # Add GALM
+  for(i in seq_along(sim_runs)) {
+    df_plot <- df_plot %>%
+      bind_rows(
+        tibble(
+          run_length = rle_galm[[i]]$dry,
+          type       = "Dry",
+          source     = model_name_loc,
+          run        = sim_runs[i],
+          site       = site_it
+        ),
+        tibble(
+          run_length = rle_galm[[i]]$wet,
+          type       = "Wet",
+          source     = model_name_loc,
+          run        = sim_runs[i],
+          site       = site_it
+        )
+      )
+  }
+  
+  # Add BAMLSS
+  for(i in seq_along(sim_runs)) {
+    df_plot <- df_plot %>%
+      bind_rows(
+        tibble(
+          run_length = rle_bamlss[[i]]$dry,
+          type       = "Dry",
+          source     = "GAMLSS",
+          run        = sim_runs[i],
+          site       = site_it
+        ),
+        tibble(
+          run_length = rle_bamlss[[i]]$wet,
+          type       = "Wet",
+          source     = "GAMLSS",
+          run        = sim_runs[i],
+          site       = site_it
+        )
+      )
+  }
+  dfs[[site_it]] <- df_plot
+}
+df_all <- bind_rows(dfs)
+
+
+tail_df <- df_all %>%
+  group_by(source, run, type) %>%
+  count(run_length) %>%
+  group_by(source, type) %>%
+  arrange(run_length) %>%
+  mutate(
+    prob = n / sum(n),
+    tail_prob = rev(cumsum(rev(prob)))
+  )
+
+ggplot(tail_df, aes(x = run_length, y = tail_prob, color = source)) +
+  # simulation runs faint
+  geom_line(data = tail_df %>% filter(!is.na(run)), aes(group = interaction(source, run)), alpha = 0.5) +
+  # observed thick
+  geom_line(data = tail_df %>% filter(is.na(run)), size = 1.05, color = 'black') +
+  facet_wrap(~ type) +
+  scale_y_log10() +
+  scale_color_manual(
+    values = setNames(
+      c("indianred1", "lightblue", "black"),   # colors
+      c(model_name_loc, "GAMLSS", "Observed") # names must match source levels
+    ),
+    breaks = c(model_name_loc, "GAMLSS", "Observed"),
+    name = "Model"
+  ) +
+  labs(
+    x = "Run length ≥ k (days)",
+    y = "Tail probability (log scale)"
+  ) +
+  theme_minimal() +
+  theme(
+    plot.title       = element_text(size = 18),
+    axis.title       = element_text(size = 14),
+    axis.text        = element_text(size = 12),
+    legend.title     = element_text(size = 14),
+    legend.text      = element_text(size = 14),
+    strip.text       = element_text(size = 14)  # facet labels
+  )
+ggsave(paste0("plots/", effect_types, "/joint_latent_multivariate_gaussian/overview_plots/persistence_pooled.png"), width = 2500, height = 1250, units = "px")
+
+
+# QQplots aggregated by week -----------------------------------------------------------------
+
+# Areal average
+mean_precip_df <- results %>% 
+  group_by(simulation_run, date, month, meteorological_season) %>% 
+  summarise(
+    real_precip = mean(real_precip),
+    simulation_values_galm = mean(simulation_values_galm),
+    simulation_values_bamlss = mean(simulation_values_bamlss),
+    .groups = "drop"
+  )
+
+mean_precip_weekly <- mean_precip_df %>%
+  mutate(week = floor_date(date, unit = "week", week_start = 1)) %>%  # week starts on Monday
+  group_by(simulation_run, week, month, meteorological_season) %>%
+  summarise(
+    real_precip             = mean(real_precip, na.rm = TRUE),
+    simulation_values_galm   = mean(simulation_values_galm, na.rm = TRUE),
+    simulation_values_bamlss = mean(simulation_values_bamlss, na.rm = TRUE),
+    .groups = "drop"
+  )
+
+# Merged
+mean_precip_weekly <- results %>%
+  mutate(week = floor_date(date, unit = "week", week_start = 1)) %>%  # week starts on Monday
+  group_by(simulation_run, week, month, meteorological_season, site) %>%
+  summarise(
+    real_precip             = mean(real_precip, na.rm = TRUE),
+    simulation_values_galm   = mean(simulation_values_galm, na.rm = TRUE),
+    simulation_values_bamlss = mean(simulation_values_bamlss, na.rm = TRUE),
+    .groups = "drop"
+  )
+
+make_qq_plot_of_results(mean_precip_weekly, model_type_loc = model_name_loc)
+make_qq_plot_of_results(mean_precip_weekly %>% filter(meteorological_season == 'Spring'), model_type_loc = model_name_loc)
+make_qq_plot_of_results(mean_precip_weekly %>% filter(meteorological_season == 'Summer'), model_type_loc = model_name_loc)
+make_qq_plot_of_results(mean_precip_weekly %>% filter(meteorological_season == 'Fall'), model_type_loc = model_name_loc)
+make_qq_plot_of_results(mean_precip_weekly %>% filter(meteorological_season == "Winter"), model_type_loc = model_name_loc)
+
+
+
+
