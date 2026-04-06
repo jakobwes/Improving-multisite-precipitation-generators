@@ -8,7 +8,7 @@ library("extRemes")
 # SETUP -------------------------------------------------------------------
 
 
-effect_types <- "1_parametric"
+effect_types <- "2_nonparametric"
 
 model_type_loc <- if (effect_types == "2_nonparametric") "galm" else "glm"
 model_name_loc <- if (effect_types == "2_nonparametric") "GAM" else "GLM"
@@ -1163,11 +1163,18 @@ p_max_galm <- results %>%
 
 
 # Lag 1
+results_mean <- results %>% 
+  group_by(simulation_run, date) %>%
+  summarise(
+    simulation_values_galm = mean(simulation_values_galm), 
+    simulation_values_bamlss = mean(simulation_values_bamlss), 
+    real_precip = mean(real_precip), 
+    .groups = "drop")
+
 # Create lagged dataset (shift date forward by 1 day)
-lagged <- results %>%
+lagged <- results_mean %>%
   mutate(date = date + 1) %>%
   select(
-    site,
     simulation_run,
     date,
     lag1_simulation_values_galm  = simulation_values_galm,
@@ -1176,23 +1183,17 @@ lagged <- results %>%
   )
 
 # Join back to original data
-results <- results %>%
-  left_join(lagged, by = c("site", "date", 'simulation_run'))
+results_mean_with_lag1 <- results_mean %>%
+  left_join(lagged, by = c("date", 'simulation_run'))
 
 
-p_lag1_bamlss <- results %>% 
+p_lag1_bamlss <- results_mean_with_lag1 %>% 
   mutate(month = month(date)) %>%
-  group_by(month, simulation_run, site) %>%
+  group_by(month, simulation_run) %>%
   summarise(
     cor = cor(simulation_values_bamlss, lag1_simulation_values_bamlss, use = "complete.obs"), 
     real_precip = cor(real_precip, lag1_real_precip, use = "complete.obs"), 
     .groups = "drop") %>%
-  group_by(month, simulation_run) %>%
-  summarise(
-    cor = mean(cor),
-    real_precip = mean(real_precip),
-    .groups = 'drop'
-  ) %>%
   group_by(month) %>%
   # 90% is full 19, 80% is inner 9, 75% is inner 7, 50% is inner 3
   reframe(
@@ -1217,19 +1218,13 @@ p_lag1_bamlss <- results %>%
   theme_bw() + theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), legend.position = "bottom", legend.title=element_blank())
 # ggsave(paste0("plots/", effect_types, "/joint_latent_multivariate_gaussian/overview_plots/bamlss_acf1.png"), p_lag1_bamlss, width = 1800, height = 1400, units = "px")
 
-p_lag1_galm <- results %>% 
+p_lag1_galm <- results_mean_with_lag1 %>% 
   mutate(month = month(date)) %>%
-  group_by(month, simulation_run, site) %>%
+  group_by(month, simulation_run) %>%
   summarise(
     cor = cor(simulation_values_galm, lag1_simulation_values_galm, use = "complete.obs"), 
     real_precip = cor(real_precip, lag1_real_precip, use = "complete.obs"), 
     .groups = "drop") %>%
-  group_by(month, simulation_run) %>%
-  summarise(
-    cor = mean(cor),
-    real_precip = mean(real_precip),
-    .groups = 'drop'
-  ) %>%
   group_by(month) %>%
   # 90% is full 19, 80% is inner 9, 75% is inner 7, 50% is inner 3
   reframe(
@@ -1257,10 +1252,9 @@ p_lag1_galm <- results %>%
 
 # Lag 2 
 # Create lagged dataset (shift date forward by 1 day)
-lagged <- results %>%
+lagged <- results_mean %>%
   mutate(date = date + 2) %>%
   select(
-    site,
     simulation_run,
     date,
     lag2_simulation_values_galm  = simulation_values_galm,
@@ -1269,23 +1263,17 @@ lagged <- results %>%
   )
 
 # Join back to original data
-results <- results %>%
-  left_join(lagged, by = c("site", "date", 'simulation_run'))
+results_mean_with_lag2 <- results_mean %>%
+  left_join(lagged, by = c("date", 'simulation_run'))
 
 
-p_lag2_bamlss <- results %>% 
+p_lag2_bamlss <- results_mean_with_lag2 %>% 
   mutate(month = month(date)) %>%
-  group_by(month, simulation_run, site) %>%
+  group_by(month, simulation_run) %>%
   summarise(
     cor = cor(simulation_values_bamlss, lag2_simulation_values_bamlss, use = "complete.obs"), 
     real_precip = cor(real_precip, lag2_real_precip, use = "complete.obs"), 
     .groups = "drop") %>%
-  group_by(month, simulation_run) %>%
-  summarise(
-    cor = mean(cor),
-    real_precip = mean(real_precip),
-    .groups = 'drop'
-  ) %>%
   group_by(month) %>%
   # 90% is full 19, 80% is inner 9, 75% is inner 7, 50% is inner 3
   reframe(
@@ -1310,19 +1298,13 @@ p_lag2_bamlss <- results %>%
   theme_bw() + theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), legend.position = "bottom", legend.title=element_blank())
 # ggsave(paste0("plots/", effect_types, "/joint_latent_multivariate_gaussian/overview_plots/bamlss_acf2.png"), p_lag2_bamlss, width = 1800, height = 1400, units = "px")
 
-p_lag2_galm <- results %>% 
+p_lag2_galm <- results_mean_with_lag2 %>% 
   mutate(month = month(date)) %>%
-  group_by(month, simulation_run, site) %>%
+  group_by(month, simulation_run) %>%
   summarise(
     cor = cor(simulation_values_galm, lag2_simulation_values_galm, use = "complete.obs"), 
     real_precip = cor(real_precip, lag2_real_precip, use = "complete.obs"), 
     .groups = "drop") %>%
-  group_by(month, simulation_run) %>%
-  summarise(
-    cor = mean(cor),
-    real_precip = mean(real_precip),
-    .groups = 'drop'
-  ) %>%
   group_by(month) %>%
   # 90% is full 19, 80% is inner 9, 75% is inner 7, 50% is inner 3
   reframe(
